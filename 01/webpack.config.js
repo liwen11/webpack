@@ -4,6 +4,8 @@
 // webpack是基于nodeJs
 const path = require('path')
 
+
+
 module.exports = {
   context: process.cwd(), // 上下文 项目打包相对路径， 默认指向项目的根目录即：process.cwd()，必须是绝对路径
   entry: './src/index.js', // 打包构建的入口，是相对路径，相对于context路径
