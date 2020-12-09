@@ -3,6 +3,7 @@
 // webpack配置就是一个对象
 // webpack是基于nodeJs
 const path = require('path')
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = {
   context: process.cwd(), // 上下文 项目打包相对路径， 默认指向项目的根目录即：process.cwd()，必须是绝对路径
@@ -37,5 +38,9 @@ module.exports = {
         use: ['style-loader', 'css-loader']
       }
     ]
-  }
+  },
+  // 插件
+  plugins: [
+    new CleanWebpackPlugin()
+  ]
 }
