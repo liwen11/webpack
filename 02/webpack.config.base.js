@@ -1,47 +1,13 @@
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const webpack = require("webpack")
+// base公共配置
 
-// 压缩css
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const path = require("path");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = {
   entry: "./src/index.js",
-  mode: "development",
-  output: {
-    path: path.resolve(__dirname, "./dist"),
-    filename: "[name].js",
-  },
+  
   module: {
     rules: [
-      {
-        test: /\.css$/,
-        include: path.resolve(__dirname, "./src"),
-        // include // 只去这里查找。推荐只用include去src下查找
-        // exclude 不去这里查找
-        use: ["style-loader", "css-loader"],
-      },
-      {
-        test: /\.less$/,
-        include: path.resolve(__dirname, "./src"),
-        use: [
-          // "style-loader",
-          MiniCssExtractPlugin.loader,// 对HMR支持不友好
-          {
-            loader: "css-loader",
-            options: {
-              //css modules 开启
-              modules: true,
-            },
-          },
-          {
-            loader: "postcss-loader",
-          },
-          "less-loader",
-        ],
-      },
       {
         test: /\.(png|jpe?g|gif)$/,
         include: path.resolve(__dirname, "./src"),
@@ -103,58 +69,11 @@ module.exports = {
     },
     extensions:[".js",".json",".jsx",".ts", ".less"]
   },
-  devtool: "cheap-inline-source-map",
-  devServer: {
-    //可以是相对路径
-    contentBase: "./dist",
-    open: true,
-    hot: true, // 开启HMR
-    hotOnly: true, // 即便HMR没有生效，浏览器也不要自动刷新
-    // proxy: {
-    //   '/api': {
-    //     target: 'http://localhost:9092'
-    //   }
-    // },
-    // 加载devServer中间件之前
-    before(app, server) {
-      app.get("/api/info", (req, res) => {
-        res.json({
-          hello: "express"
-        })
-      })
-    },
-    // 加载devServer中间件之后
-    after() {},
-    port: 8080,
-  },
   externals: {
     //jquery通过script引⼊之后，全局中即有了 jQuery 变量
     // 'jquery': 'jQuery'
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new MiniCssExtractPlugin({
-      filename: "css/[name]-[contenthash:8].css",
-    }),
-    new OptimizeCSSAssetsPlugin({
-      // cssnano是postcss的依赖，因此安装了postcss后不需要再安装cssano 
-      cssProcessor: require("cssnano"), //引⼊cssnano配置压缩选项
-      cssProcessorOptions: {
-      discardComments: { removeAll: true }
-      }
-    }),
-    new HtmlWebpackPlugin({
-      //选择html模板
-      title: "首页",
-      template: "./src/index.html",
-      filename: "index.html",
-      minify: {
-        // 压缩HTML⽂件
-        removeComments: true, // 移除HTML中的注释
-        collapseWhitespace: true, // 删除空⽩符与换⾏符
-        minifyCSS: true // 压缩内联css
-      }
-    }),
-    new webpack.HotModuleReplacementPlugin()
   ],
 };

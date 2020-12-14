@@ -1,6 +1,6 @@
 import css from "./css/index.less";
 
-import axios from 'axios'
+// import axios from 'axios'
 // axios.get('/api/info').then(res => {
 //   console.log(res)
 // })
