@@ -1,7 +1,10 @@
 // 开发配置
 const path = require("path");
 const baseConfig = require('./webpack.config.base.js')
+
+// "build": "webpack --config ./webpack.config.pro.js",
 // 通过--config 指定webpack启动时走哪个配置文件，默认走webpack.config.js
+
 const {merge} = require('webpack-merge');
 
 const HtmlWebpackPlugin = require("html-webpack-plugin");
