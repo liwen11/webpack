@@ -1,4 +1,20 @@
-import css from "./css/index.less";
+import _ from "lodash";
+console.log(_.join(['a','b','c','****']))
+
+import React, { Component } from "react";
+import ReactDom from "react-dom";
+class App extends Component {
+  render() {
+    return <div>hello world</div>;
+  }
+}
+ReactDom.render(<App />,
+  document.getElementById("root"));
+// import {add} from './expo'
+// add(1, 2)
+
+
+// import css from "./css/index.less";
 
 // import axios from 'axios'
 // axios.get('/api/info').then(res => {
@@ -50,12 +66,3 @@ import css from "./css/index.less";
 // 因此，我们需要给垫片瘦身，实现按需加载减少冗余
 
 // import jquery from 'jquery'
-import React, { Component } from "react";
-import ReactDom from "react-dom";
-class App extends Component {
-  render() {
-    return <div>hello world</div>;
-  }
-}
-ReactDom.render(<App />,
-  document.getElementById("root"));

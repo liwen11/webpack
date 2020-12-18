@@ -4,12 +4,15 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require("webpack")
 
+const PurifyCSS = require('purifycss-webpack')
+const glob = require('glob-all')
+
 // 压缩css
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
 module.exports = {
   entry: "./src/index.js",
-  mode: "development",
+  mode: "production",
   output: {
     path: path.resolve(__dirname, "./dist"),
     filename: "[name].js",
@@ -92,7 +95,7 @@ module.exports = {
   resolve: {
     // 查找第三方依赖
     modules: [path.resolve(__dirname, "./node_modules")],
-    alias:{
+    alias: {
       // 减少查找过程
       // 起别名
       "@": path.resolve(__dirname, "./src/css"),
@@ -101,7 +104,7 @@ module.exports = {
       // "react": "./node_modules/react/umd/react.production.min.js",
       // "react-dom": "./node_modules/react-dom/umd/react-dom.production.min.js"
     },
-    extensions:[".js",".json",".jsx",".ts", ".less"]
+    extensions: [".js", ".json", ".jsx", ".ts", ".less"]
   },
   devtool: "cheap-inline-source-map",
   devServer: {
@@ -124,12 +127,29 @@ module.exports = {
       })
     },
     // 加载devServer中间件之后
-    after() {},
+    after() { },
     port: 8080,
   },
   externals: {
     //jquery通过script引⼊之后，全局中即有了 jQuery 变量
     // 'jquery': 'jQuery'
+  },
+  optimization: {
+    usedExports: true, // 哪些导出的模块被使⽤了，再做打包
+    splitChunks: {
+      chunks: "all", // 所有的 chunks 代码公共的部分分离出来成为⼀个单独的⽂件
+      automaticNameDelimiter: '-',
+      cacheGroups: {
+        lodash: {
+          test: /lodash/,
+          name: 'lodash'
+        },
+        react: {
+          test: /react|react-dom/,
+          name: 'react'
+        }
+      }
+    },
   },
   plugins: [
     new CleanWebpackPlugin(),
@@ -140,20 +160,29 @@ module.exports = {
       // cssnano是postcss的依赖，因此安装了postcss后不需要再安装cssano 
       cssProcessor: require("cssnano"), //引⼊cssnano配置压缩选项
       cssProcessorOptions: {
-      discardComments: { removeAll: true }
+        discardComments: { removeAll: true }
       }
+    }),
+    new PurifyCSS({
+      // 返回符合条件的路径模块
+      paths: glob.sync([
+        // 要做 CSS Tree Shaking 的路径⽂件
+        path.resolve(__dirname, './src/*.html'), // 请注意，我们同样需要对 html ⽂件进⾏ tree shaking
+
+        path.resolve(__dirname, './src/*.js')
+      ])
     }),
     new HtmlWebpackPlugin({
       //选择html模板
       title: "首页",
       template: "./src/index.html",
       filename: "index.html",
-      minify: {
-        // 压缩HTML⽂件
-        removeComments: true, // 移除HTML中的注释
-        collapseWhitespace: true, // 删除空⽩符与换⾏符
-        minifyCSS: true // 压缩内联css
-      }
+      // minify: {
+      //   // 压缩HTML⽂件
+      //   removeComments: true, // 移除HTML中的注释
+      //   collapseWhitespace: true, // 删除空⽩符与换⾏符
+      //   minifyCSS: true // 压缩内联css
+      // }
     }),
     new webpack.HotModuleReplacementPlugin()
   ],
