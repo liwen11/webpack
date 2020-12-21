@@ -1,5 +1,7 @@
-import _ from "lodash";
-console.log(_.join(['a','b','c','****']))
+import str from './hello'
+
+// import _ from "lodash";
+// console.log(_.join(['a','b','c','****']))
 
 import React, { Component } from "react";
 import ReactDom from "react-dom";

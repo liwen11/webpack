@@ -7,12 +7,22 @@ const webpack = require("webpack")
 const PurifyCSS = require('purifycss-webpack')
 const glob = require('glob-all')
 
+// const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
+// const smp = new SpeedMeasurePlugin();
+
+const HappyPack = require('happypack')
+// 通过nodejs判断当前电脑是几核的 然后开启ThreadPool几个线程
+const happyThreadPool = HappyPack.ThreadPool({ size: os.cpus().length })
+
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin')
+
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 // 压缩css
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 
-module.exports = {
+const config = {
   entry: "./src/index.js",
-  mode: "production",
+  mode: "development",
   output: {
     path: path.resolve(__dirname, "./dist"),
     filename: "[name].js",
@@ -24,39 +34,42 @@ module.exports = {
         include: path.resolve(__dirname, "./src"),
         // include // 只去这里查找。推荐只用include去src下查找
         // exclude 不去这里查找
-        use: ["style-loader", "css-loader"],
+        // use: ["style-loader", "css-loader"],
+        use:["HappyPack/loader?id=css"],
       },
       {
         test: /\.less$/,
         include: path.resolve(__dirname, "./src"),
-        use: [
-          // "style-loader",
-          MiniCssExtractPlugin.loader,// 对HMR支持不友好
-          {
-            loader: "css-loader",
-            options: {
-              //css modules 开启
-              modules: true,
-            },
-          },
-          {
-            loader: "postcss-loader",
-          },
-          "less-loader",
-        ],
+        use: ["HappyPack/loader?id=less"]
+        // use: [
+        //   // "style-loader",
+        //   MiniCssExtractPlugin.loader,// 对HMR支持不友好
+        //   {
+        //     loader: "css-loader",
+        //     options: {
+        //       //css modules 开启
+        //       modules: true,
+        //     },
+        //   },
+        //   {
+        //     loader: "postcss-loader",
+        //   },
+        //   "less-loader",
+        // ],
       },
       {
         test: /\.(png|jpe?g|gif)$/,
         include: path.resolve(__dirname, "./src"),
         use: {
-          loader: "url-loader",
-          options: {
-            name: "[name]_[hash:6].[ext]",
-            outputPath: "images/",
-            //推荐使用url-loader 因为url-loader支持limit
-            //推荐小体积的图片资源转成base64
-            limit: 12 * 1024, //单位是字节 1024=1kb
-          },
+          loader: "HappyPack/loader?id=pic"
+          // loader: "url-loader",
+          // options: {
+          //   name: "[name]_[hash:6].[ext]",
+          //   outputPath: "images/",
+          //   //推荐使用url-loader 因为url-loader支持limit
+          //   //推荐小体积的图片资源转成base64
+          //   limit: 12 * 1024, //单位是字节 1024=1kb
+          // },
         },
       },
       {
@@ -64,7 +77,10 @@ module.exports = {
         // exclude: /node_modules/,
         include: path.resolve(__dirname, "./src"),
         use: {
-          loader: "babel-loader", // webpack和babel的通信桥梁，不会用于语法转换
+          loader: "HappyPack/loader?id=js"
+        }
+        // use: {
+        //   loader: "babel-loader", // webpack和babel的通信桥梁，不会用于语法转换
           // options: {
           //   // 语法转换插件preset-env
           //   presets: [
@@ -88,7 +104,7 @@ module.exports = {
           //     '@babel/preset-react'
           //   ]
           // }
-        }
+        // }
       }
     ],
   },
@@ -136,20 +152,21 @@ module.exports = {
   },
   optimization: {
     usedExports: true, // 哪些导出的模块被使⽤了，再做打包
-    splitChunks: {
-      chunks: "all", // 所有的 chunks 代码公共的部分分离出来成为⼀个单独的⽂件
-      automaticNameDelimiter: '-',
-      cacheGroups: {
-        lodash: {
-          test: /lodash/,
-          name: 'lodash'
-        },
-        react: {
-          test: /react|react-dom/,
-          name: 'react'
-        }
-      }
-    },
+    // splitChunks: {
+    //   chunks: "all", // 所有的 chunks 代码公共的部分分离出来成为⼀个单独的⽂件
+    //   automaticNameDelimiter: '-',
+    //   cacheGroups: {
+    //     lodash: {
+    //       test: /lodash/,
+    //       name: 'lodash'
+    //     },
+    //     react: {
+    //       test: /react|react-dom/,
+    //       name: 'react'
+    //     }
+    //   }
+    // },
+    concatenateModules: true
   },
   plugins: [
     new CleanWebpackPlugin(),
@@ -184,6 +201,20 @@ module.exports = {
       //   minifyCSS: true // 压缩内联css
       // }
     }),
-    new webpack.HotModuleReplacementPlugin()
+    new HardSourceWebpackPlugin(),
+    // new BundleAnalyzerPlugin(),
+    // new webpack.DllReferencePlugin({
+    //   manifest: path.resolve(__dirname,"./dll/react-manifest.json")
+    // }),
+    new webpack.HotModuleReplacementPlugin(),
+    new HappyPack({
+      id: 'css',
+      loaders: ["style-loader", "css-loader"]
+    }),
+    new HappyPack({
+      id: 'js',
+      loaders: ["babel-loader"]
+    })
   ],
 };
+module.exports = config
